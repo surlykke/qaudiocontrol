@@ -1,0 +1,144 @@
+
+
+
+
+
+
+
+
+
+
+
+class Mixer;
+
+
+
+class PAO : public QObject
+{
+
+public:
+PAO(QString path, QObject *parent = 0) : QObject(parent), mPath(path)
+{
+}
+
+
+protected:
+QDBusInterface* createInterface(QString interfaceName)
+{
+return new QDBusInterface(QString(), mPath, interfaceName, connection(), this);
+}
+
+template<typename PropertyType> PropertyType getProperty(const char* propertyName, QDBusInterface *interface)
+{
+QVariant variant = interface->property(propertyName);
+return variant.value<PropertyType>();
+}
+
+QString path() { return mPath; }
+
+private:
+
+static QDBusConnection& connection()
+{
+static QDBusConnection * conn = 0;
+if (!conn)
+{
+QDBusInterface interface("org.PulseAudio1", "/org/pulseaudio/server_lookup1", "org.PulseAudio.ServerLookup1");
+QVariant var = interface.property("Address");
+conn = new QDBusConnection(QDBusConnection::connectToPeer(var.toString(), "pulseAudioConnection"));
+}
+return *conn;
+}
+
+QString mPath;
+};
+
+class PAProxy : public PAO
+{
+Q_OBJECT
+
+public:
+PAProxy(QString path, QObject *parent = 0);
+virtual ~PAProxy();
+
+void setupConnections(Mixer* mixer);
+
+signals:
+void sinkAppeared(QDBusObjectPath objectPath);
+void sinkDisappeared(QDBusObjectPath objectPath);
+
+void sourceAppeared(QDBusObjectPath objectPath);
+void sourceDisappeared(QDBusObjectPath objectPath);
+
+void inputStreamAppeared(QDBusObjectPath objectPath);
+void inputStreamDisappeared(QDBusObjectPath objectPath);
+
+void outputStreamAppeared(QDBusObjectPath objectPath);
+void outputStreamDisappeared(QDBusObjectPath objectPath);
+
+private:
+QDBusInterface *m_org_PulseAudio_Core1;
+};
+
+class Sink : public PAO
+{
+public:
+Sink(QString path, QObject *parent = 0);
+virtual ~Sink();
+};
+
+class Source : public PAO
+{
+public:
+Source(QString path, QObject *parent = 0);
+virtual ~Source();
+};
+
+class InputStream : public PAO
+{
+public:
+InputStream(QString path, QObject *parent = 0);
+virtual ~InputStream();
+};
+
+class OutputStream : public PAO
+{
+public:
+OutputStream(QString path, QObject *parent = 0);
+virtual ~OutputStream();
+};
+
+namespace Ui {
+class Mixer;
+}
+
+class QGraphicsScene;
+class DeviceView;
+
+class Mixer : public QMainWindow
+{
+Q_OBJECT
+
+public:
+explicit Mixer(QWidget *parent = 0);
+~Mixer();
+
+public slots:
+void newSink(QDBusObjectPath objectPath);
+void newSource(QDBusObjectPath objectPath);
+void newPlaybackStream(QDBusObjectPath objectPath);
+void newRecordStream(QDBusObjectPath objectPath);
+
+void deviceRemoved(QDBusObjectPath objectPath);
+
+private:
+void addDevice(DeviceView *deviceView);
+
+void doLayout();
+
+Ui::Mixer *ui;
+QGraphicsScene* mScene;
+PAProxy *paProxy;
+
+QMap<QString, DeviceView*> deviceViews;
+};
