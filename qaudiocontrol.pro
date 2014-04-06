@@ -6,7 +6,7 @@
 
 QT       += core gui widgets dbus
 
-TARGET = Mixer
+TARGET = qaudiocontrol
 TEMPLATE = app
 
 SOURCES += main.cpp\
