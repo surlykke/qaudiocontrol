@@ -44,9 +44,13 @@ find_package (Qt5Core)
 find_package (Qt5Gui)
 find_package (Qt5Widgets)
 find_package (Qt5DBus)
-QT5_WRAP_UI(UIS ${qaudiocontrol_UIS})
-QT5_ADD_RESOURCES(RSCS ${qaudiocontrol_RSCS})
-QT5_WRAP_CPP(MOCS ${qaudiocontrol_MOCS})
+
+qt5_wrap_ui(UIS ${qaudiocontrol_UIS})
+qt5_add_resources(RSCS ${qaudiocontrol_RSCS})
+qt5_wrap_cpp(mocs ${qaudiocontrol_mocs})
+
+set_source_files_properties(org.PulseAudio.Core1.Device.xml PROPERTIES INCLUDE dbus_types.h)
+qt5_add_dbus_interface(DBUS_STUFF org.PulseAudio.Core1.Device.xml device_proxy)
 
 add_executable ( qaudiocontrol
                  ${qaudiocontrol_SRCS}

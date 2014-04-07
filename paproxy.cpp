@@ -68,7 +68,7 @@ void PAProxy::setupConnections(Mixer *mixer)
 Sink::Sink(QString path, QObject *parent) : PAO(path, parent)
 {
     m_org_PulseAudio_Core1_Sink = createInterface("org.PulseAudio.Core1.Device");
-    DeviceProxy *deviceProxy = new DeviceProxy(QString(), path, connection(), this);
+    OrgPulseAudioCore1DeviceInterface *deviceProxy = new OrgPulseAudioCore1DeviceInterface(QString(), path, connection(), this);
     DBusPropertyList props = deviceProxy->propertyList();
     qDebug() << "props: " << props.keys();
     QString propName;
